@@ -11,6 +11,7 @@ export const addressSchema = z.object({
 export const farmerSchema = z
   .object({
     _id: z.string(),
+    rspc: z.string(),
     firstname: z.string(),
     lastname: z.string(),
     middleInitial: z.string(),

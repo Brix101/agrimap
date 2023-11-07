@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import dayjs from "dayjs";
 import FarmerModel from "../models/farmer.model";
 import UserModel from "../models/user.model";
 import logger from "./logger";
@@ -73,12 +74,17 @@ export const generateFakeFarmers = () => {
   for (let i = 0; i < predefinedAddresses.length; i++) {
     const predefinedAddress =
       predefinedAddresses[i % predefinedAddresses.length];
+    const formattedDate = dayjs().format("DD-MM-YY");
+    const countString = (i + 1).toString().padStart(6, "0");
+
+    const formattedString = `${formattedDate}-000-${countString}`;
     const farmer = {
       firstname: faker.person.firstName(),
       lastname: faker.person.lastName(),
       middleInitial: faker.person.middleName().charAt(0),
       address: predefinedAddress,
-      phoneNumber: faker.phone.number(),
+      phoneNumber: faker.phone.number().slice(0, 11),
+      rspc: formattedString,
     };
     farmers.push(farmer);
   }

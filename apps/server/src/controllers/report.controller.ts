@@ -39,13 +39,15 @@ export const getReportHandler = async (req: Request, res: Response) => {
     const workbook = new ExcelJS.Workbook();
 
     const farmerWorksheet = workbook.addWorksheet("Farmers");
-    farmerWorksheet.getColumn("A").width = 14.29;
+    farmerWorksheet.getColumn("A").width = 23.43;
     farmerWorksheet.getColumn("B").width = 14.29;
-    farmerWorksheet.getColumn("C").width = 21.14;
-    farmerWorksheet.getColumn("D").width = 76.14;
+    farmerWorksheet.getColumn("C").width = 14.29;
+    farmerWorksheet.getColumn("D").width = 21.14;
+    farmerWorksheet.getColumn("E").width = 76.14;
 
     const farmers = await getAllFarmer();
     farmerWorksheet.addRow([
+      "RSPC",
       "Last Name",
       "First Name",
       "Phone Number",
@@ -59,10 +61,16 @@ export const getReportHandler = async (req: Request, res: Response) => {
     });
 
     farmers.forEach((farmer) => {
-      const { firstname, lastname, address, phoneNumber } = farmer;
+      const { rspc, firstname, lastname, address, phoneNumber } = farmer;
       const fullAddress = `${address.streetAddress}, ${address.cityOrProvince}, ${address.municipality}, ${address.barangay}, ${address.zipcode}`;
 
-      farmerWorksheet.addRow([lastname, firstname, phoneNumber, fullAddress]);
+      farmerWorksheet.addRow([
+        rspc,
+        lastname,
+        firstname,
+        phoneNumber,
+        fullAddress,
+      ]);
     });
 
     const farmWorksheet = workbook.addWorksheet("Farms");

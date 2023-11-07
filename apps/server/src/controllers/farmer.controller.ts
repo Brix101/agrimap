@@ -62,7 +62,7 @@ const updateFarmerHandler = async (
   req: Request<UpdateFarmerInput["params"]>,
   res: Response
 ) => {
-  const farmerId = req.params.farmerId;
+  const farmerId = req.params?.farmerId ?? "";
   const update = req.body;
 
   const farmer = await findFarmer({ _id: farmerId });

@@ -93,6 +93,7 @@ export async function getAllFarmer() {
       $project: {
         _id: 1,
         id: 1,
+        rspc: 1,
         firstname: 1,
         lastname: 1,
         middleInitial: 1,
@@ -144,7 +145,7 @@ export async function findFarmer(query: FilterQuery<IFarmer>) {
 export async function updateFarmer(
   query: FilterQuery<IFarmer>,
   update: UpdateQuery<IFarmer>,
-  options: QueryOptions,
+  options: QueryOptions
 ) {
   return FarmerModel.findByIdAndUpdate(query, update, options);
 }

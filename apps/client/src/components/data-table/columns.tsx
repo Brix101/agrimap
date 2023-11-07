@@ -66,6 +66,18 @@ export const userColumns: ColumnDef<User>[] = [
 
 export const farmerColumns: ColumnDef<Farmer>[] = [
   {
+    accessorKey: "rspc",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="RSPC" />
+    ),
+    cell: ({ row }) => (
+      <div className="w-[150px] capitalize font-medium">
+        {row.getValue("rspc")}
+      </div>
+    ),
+    enableHiding: false,
+  },
+  {
     accessorKey: "fullName",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
@@ -83,7 +95,7 @@ export const farmerColumns: ColumnDef<Farmer>[] = [
       <DataTableColumnHeader column={column} title="Phone Number" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium text-center">
+      <div className="w-[100px] font-medium text-center">
         {row.getValue("phoneNumber")}
       </div>
     ),
