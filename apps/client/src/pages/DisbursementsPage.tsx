@@ -1,5 +1,6 @@
 import { disbursementColumns } from "@/components/data-table/columns";
 import { DataTable } from "@/components/data-table/table";
+import DisbursementReport from "@/components/disbursement-report";
 import { CreateDisbursemntForm } from "@/components/forms/disbursement-form";
 import {
   PageHeader,
@@ -19,7 +20,6 @@ function DisbursementsPage() {
   const initialData = useLoaderData() as Awaited<
     ReturnType<ReturnType<typeof disbursementsLoader>>
   >;
-
   const { data, isLoading } = useGetDisbursements({ initialData });
   const { setDialogItem } = useBoundStore((state) => state.dialog);
 
@@ -42,6 +42,7 @@ function DisbursementsPage() {
             Disbursements
           </PageHeaderHeading>
 
+          <DisbursementReport />
           <Button size="sm" onClick={handleCreateClick}>
             Add disbursement
           </Button>

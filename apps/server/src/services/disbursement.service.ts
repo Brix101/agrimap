@@ -42,6 +42,24 @@ export async function getAllDisbursement() {
   return DisbursementModel.find().populate("farmer").sort({ receivedDate: -1 });
 }
 
+export async function getAllDisbursementRange({
+  from,
+  to,
+}: {
+  from: Date;
+  to: Date;
+}) {
+  const filter = {
+    receivedDate: {
+      $gte: from,
+      $lte: to,
+    },
+  };
+  return DisbursementModel.find(filter)
+    .populate("farmer")
+    .sort({ receivedDate: -1 });
+}
+
 export async function createDisbursement(input: DisbursementInput) {
   try {
     const disbursement = await DisbursementModel.create(input);
@@ -59,7 +77,7 @@ export async function findDisbursement(query: FilterQuery<IDisbursement>) {
 export async function updateDisbursement(
   query: FilterQuery<IDisbursement>,
   update: UpdateQuery<IDisbursement>,
-  options: QueryOptions,
+  options: QueryOptions
 ) {
   return DisbursementModel.findByIdAndUpdate(query, update, options);
 }

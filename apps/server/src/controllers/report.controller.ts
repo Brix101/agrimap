@@ -1,5 +1,8 @@
+import dayjs from "dayjs";
 import ExcelJS, { Cell } from "exceljs";
 import { Request, Response } from "express";
+import puppeteer from "puppeteer";
+import { getAllDisbursementRange } from "../services/disbursement.service";
 import { getAllFarm } from "../services/farm.service";
 import { getAllFarmer } from "../services/farmer.service";
 import { getAllMortgage } from "../services/mortgage.service";
@@ -156,14 +159,179 @@ export const getReportHandler = async (req: Request, res: Response) => {
     // Set the response headers for download
     res.setHeader(
       "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
     res.setHeader(
       "Content-Disposition",
-      `Report-${getCurrentDateFormatted()}.xlsx`,
+      `Report-${getCurrentDateFormatted()}.xlsx`
     );
 
     res.send(buffer);
+  } catch (error) {
+    logger.error("Error generating Excel file:", error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+export const getDisbursementReportHandler = async (
+  req: Request<{}, {}, {}, { from: Date; to: Date }>,
+  res: Response
+) => {
+  try {
+    const from = req.query.from;
+    const to = req.query.to;
+
+    const disbursements = await getAllDisbursementRange({ from, to });
+
+    // Launch a headless browser
+    const browser = await puppeteer.launch({
+      headless: "new",
+    });
+    const page = await browser.newPage();
+
+    // Create an HTML template with dynamic data
+    const htmlContent = `
+          <html>
+          <body
+          style="
+            padding: 20px;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          "
+        >
+    <div>
+      <header
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <img
+          src="https://utfs.io/f/cc3c5fe7-cb9a-4318-80fe-d7a6e30456c1-sb6rl1.png"
+          alt="DA Logo"
+          style="height: 150px; width: 150px"
+        />
+        <div style="text-align: center">
+          Republic of the Philippines<br />
+          Department of Agriculture<br />
+          Purok 3, Brgy.West Poblacion, Kalilangan, Bukidnon<br />
+          Tel No.(000) 123-1999<br />
+          Email address:
+          <span style="color: blue; text-decoration: underline"
+            >DAkalilangan@gmail.com</span
+          >
+        </div>
+        <img
+          src="https://utfs.io/f/cc3c5fe7-cb9a-4318-80fe-d7a6e30456c1-sb6rl1.png"
+          alt="DA Logo"
+          style="height: 150px; width: 150px"
+        />
+      </header>
+      <div>
+        <div
+          style="
+            display: flex;
+            width: 100%;
+            justify-content: end;
+            padding-top: 10px;
+          "
+        >
+          <p>Date: ${dayjs().format("MMMM DD, YYYY")}</p>
+        </div>
+        <div style="width: 100%; display: flex; justify-content: center">
+          <p
+            style="
+              font-size: 18px;
+              font-weight: bold;
+              text-decoration: underline;
+            "
+          >
+            DISBURSEMENT RECORD
+          </p>
+        </div>
+        <div>
+          <p>
+            List of Farmers that received assistance from the Department of
+            Agriculture.
+          </p>
+          <table
+            style="
+              border: 1px solid #000;
+              border-collapse: collapse;
+              width: 100%;
+            "
+            cellpadding="10"
+          >
+            <thead>
+              <tr>
+                <th style="border: 1px solid #000">No.</th>
+                <th style="border: 1px solid #000">Last Name</th>
+                <th style="border: 1px solid #000">First Name</th>
+                <th style="border: 1px solid #000">M.I</th>
+                <th style="border: 1px solid #000">Assistance</th>
+                <th style="border: 1px solid #000">Date Received</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${disbursements
+              .map(
+                (item, index) => `
+                  <tr>
+                  <td style="border: 1px solid #000">${index + 1}</td>
+                  <td style="border: 1px solid #000">${
+                    item.farmer.lastname
+                  }</td>
+                  <td style="border: 1px solid #000">${
+                    item.farmer.firstname
+                  }</td>
+                  <td style="border: 1px solid #000">${
+                    item.farmer.middleInitial
+                  }</td>
+                  <td style="border: 1px solid #000">${item.assistances.join(
+                    ", "
+                  )}</td>
+                  <td style="border: 1px solid #000">${dayjs(
+                    item.createdAt
+                  ).format("MM/DD/YY")}</td>
+                  </tr>
+                  `
+              )
+              .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <footer style="display: flex; justify-content: end;">
+      <div style="display: flex; flex-direction: column">
+        <p
+          style="font-size: 16px; font-weight: bold; text-decoration: underline"
+        >
+          John Vincent Beldad
+        </p>
+        <span style="14px">Department of Agriculture</span>
+      </div>
+    </footer>
+  </body>
+          </html>
+        `;
+
+    // Set the HTML content for the page
+    await page.setContent(htmlContent);
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({ format: "A4" });
+
+    // Close the browser
+    await browser.close();
+
+    // Send the PDF as a response
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "disbursement-report.pdf");
+    res.send(pdfBuffer);
   } catch (error) {
     logger.error("Error generating Excel file:", error);
     res.status(500).send("Internal Server Error");
