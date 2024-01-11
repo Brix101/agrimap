@@ -9,7 +9,8 @@ RUN apk add --no-cache \
       nss \
       freetype \
       harfbuzz \
-      ca-certificates
+      ca-certificates \
+      ttf-freefont
 
 # Set environment variables for Puppeteer
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
